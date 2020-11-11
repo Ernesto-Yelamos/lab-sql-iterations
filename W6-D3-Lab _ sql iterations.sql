@@ -78,6 +78,7 @@ call total_business_per_store_3 (1);
     If the total sales value for the store is over 30.000, then label it as `green_flag`, otherwise label is as `red_flag`. 
     Update the stored procedure that takes an input as the `store_id` and returns total sales value for that store and flag value.
 	*/
+-- Using IF/ELSE
 drop procedure if exists total_business_per_store_4;
 delimiter //
 create procedure total_business_per_store_4 (in param1 tinyint, out param2 varchar(20))
@@ -88,7 +89,6 @@ begin
 	join sakila.staff as b on b.staff_id = a.staff_id
 	group by b.store_id
     having b.store_id = param1;
-    select param1, total_business;
     
     if total_business > 30000 then
 		set flag = 'green';
@@ -101,6 +101,30 @@ end
 //
 delimiter ;
     
+call total_business_per_store_4 (2, @x);
+
+
+
+
+-- using CASE
+drop procedure if exists total_business_per_store_4;
+delimiter //
+create procedure total_business_per_store_4 (in param1 tinyint, out param2 varchar(20))
+begin
+	declare total_business float default 0.0;
+    declare flag varchar(20) default "";
+	select sum(a.amount) into total_business from sakila.payment as a
+	join sakila.staff as b on b.staff_id = a.staff_id
+	group by b.store_id
+    having b.store_id = param1;
+    case 
+		when total_business > 30000 then set flag = 'green';
+		else set flag = 'red';
+	end case;
+    select flag into param2;
+    select param1, total_business, flag;
+end
+//
+delimiter ;
+    
 call total_business_per_store_4 (1, @x);
-
-
